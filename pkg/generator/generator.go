@@ -19,6 +19,7 @@ import (
 	"go/token"
 	"path"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -265,6 +266,69 @@ func ForwardToConnect{{$key}}Client(s *mcpserver.MCPServer, client Connect{{$key
   })
   {{- end }}
 }
+
+// ForwardToConnect{{$key}}ClientOpenAI registers a connectrpc client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardToConnect{{$key}}ClientOpenAI(s *mcpserver.MCPServer, client Connect{{$key}}Client, opts ...runtime.Option) {
+  config := runtime.NewConfig()
+  for _, opt := range opts {
+    opt(config)
+  }
+
+  {{- range $tool_name, $tool_val := $val }}
+  {{$tool_name}}ToolOpenAI := {{$key}}_{{$tool_name}}ToolOpenAI
+  // Add extra properties to schema if configured
+  if len(config.ExtraProperties) > 0 {
+    {{$tool_name}}ToolOpenAI = runtime.AddExtraPropertiesToTool({{$tool_name}}ToolOpenAI, config.ExtraProperties)
+  }
+
+  s.AddTool({{$tool_name}}ToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+    var req {{$tool_val.RequestType}}
+
+    message := request.GetArguments()
+
+    // Extract extra properties if configured
+    for _, prop := range config.ExtraProperties {
+      if propVal, ok := message[prop.Name]; ok {
+        ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+      }
+    }
+
+    runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+    marshaled, err := json.Marshal(message)
+    if err != nil {
+      return nil, err
+    }
+
+    if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+      return nil, err
+    }
+
+    resp, err := client.{{$tool_name}}(ctx, connect.NewRequest(&req))
+    if err != nil {
+      return runtime.HandleError(err)
+    }
+
+    marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+    if err != nil {
+      return nil, err
+    }
+    return mcp.NewToolResultText(string(marshaled)), nil
+  })
+  {{- end }}
+}
+
+// ForwardToConnect{{$key}}ClientWithProvider registers a connectrpc client, to forward MCP calls to it using the specified LLM provider.
+func ForwardToConnect{{$key}}ClientWithProvider(s *mcpserver.MCPServer, client Connect{{$key}}Client, provider runtime.LLMProvider, opts ...runtime.Option) {
+  switch provider {
+  case runtime.LLMProviderOpenAI:
+    ForwardToConnect{{$key}}ClientOpenAI(s, client, opts...)
+  case runtime.LLMProviderStandard:
+    fallthrough
+  default:
+    ForwardToConnect{{$key}}Client(s, client, opts...)
+  }
+}
 {{- end }}
 
 {{- range $key, $val := .Services }}
@@ -316,6 +380,69 @@ func ForwardTo{{$key}}Client(s *mcpserver.MCPServer, client {{$key}}Client, opts
   })
   {{- end }}
 }
+
+// ForwardTo{{$key}}ClientOpenAI registers a gRPC client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardTo{{$key}}ClientOpenAI(s *mcpserver.MCPServer, client {{$key}}Client, opts ...runtime.Option) {
+  config := runtime.NewConfig()
+  for _, opt := range opts {
+    opt(config)
+  }
+
+  {{- range $tool_name, $tool_val := $val }}
+  {{$tool_name}}ToolOpenAI := {{$key}}_{{$tool_name}}ToolOpenAI
+  // Add extra properties to schema if configured
+  if len(config.ExtraProperties) > 0 {
+    {{$tool_name}}ToolOpenAI = runtime.AddExtraPropertiesToTool({{$tool_name}}ToolOpenAI, config.ExtraProperties)
+  }
+
+  s.AddTool({{$tool_name}}ToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+    var req {{$tool_val.RequestType}}
+
+    message := request.GetArguments()
+
+    // Extract extra properties if configured
+    for _, prop := range config.ExtraProperties {
+      if propVal, ok := message[prop.Name]; ok {
+        ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+      }
+    }
+
+    runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+    marshaled, err := json.Marshal(message)
+    if err != nil {
+      return nil, err
+    }
+
+    if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+      return nil, err
+    }
+
+    resp, err := client.{{$tool_name}}(ctx, &req)
+    if err != nil {
+      return runtime.HandleError(err)
+    }
+
+    marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+    if err != nil {
+      return nil, err
+    }
+    return mcp.NewToolResultText(string(marshaled)), nil
+  })
+  {{- end }}
+}
+
+// ForwardTo{{$key}}ClientWithProvider registers a gRPC client, to forward MCP calls to it using the specified LLM provider.
+func ForwardTo{{$key}}ClientWithProvider(s *mcpserver.MCPServer, client {{$key}}Client, provider runtime.LLMProvider, opts ...runtime.Option) {
+  switch provider {
+  case runtime.LLMProviderOpenAI:
+    ForwardTo{{$key}}ClientOpenAI(s, client, opts...)
+  case runtime.LLMProviderStandard:
+    fallthrough
+  default:
+    ForwardTo{{$key}}Client(s, client, opts...)
+  }
+}
 {{- end }}
 
 
@@ -355,9 +482,31 @@ func (g *FileGenerator) getType(fd protoreflect.FieldDescriptor) map[string]any 
 	return gen.FieldSchema(fd, gen.SchemaOptions{OpenAICompat: g.openAICompat})
 }
 
-func (g *FileGenerator) Generate(packageSuffix string) {
-	file := g.f
+func (g *FileGenerator) shouldGenerate(includePaths string) bool {
 	if len(g.f.Services) == 0 {
+		return false
+	}
+
+	if includePaths == "" {
+		return true
+	}
+
+	paths := strings.Split(includePaths, ",")
+	for _, p := range paths {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		if strings.HasPrefix(g.f.Desc.Path(), p) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *FileGenerator) Generate(packageSuffix string, includePaths string) {
+	file := g.f
+	if !g.shouldGenerate(includePaths) {
 		return
 	}
 	goImportPath := file.GoImportPath

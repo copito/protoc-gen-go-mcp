@@ -930,6 +930,306 @@ func ForwardToConnectEdgeCaseServiceClient(s *mcpserver.MCPServer, client Connec
 	})
 }
 
+// ForwardToConnectEdgeCaseServiceClientOpenAI registers a connectrpc client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardToConnectEdgeCaseServiceClientOpenAI(s *mcpserver.MCPServer, client ConnectEdgeCaseServiceClient, opts ...runtime.Option) {
+	config := runtime.NewConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
+	AllScalarTypesToolOpenAI := EdgeCaseService_AllScalarTypesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		AllScalarTypesToolOpenAI = runtime.AddExtraPropertiesToTool(AllScalarTypesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(AllScalarTypesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.AllScalarTypesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.AllScalarTypes(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	DeepNestingToolOpenAI := EdgeCaseService_DeepNestingToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		DeepNestingToolOpenAI = runtime.AddExtraPropertiesToTool(DeepNestingToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(DeepNestingToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.DeepNestingRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.DeepNesting(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	EnumFieldsToolOpenAI := EdgeCaseService_EnumFieldsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		EnumFieldsToolOpenAI = runtime.AddExtraPropertiesToTool(EnumFieldsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(EnumFieldsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.EnumFieldsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.EnumFields(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	MapVariantsToolOpenAI := EdgeCaseService_MapVariantsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		MapVariantsToolOpenAI = runtime.AddExtraPropertiesToTool(MapVariantsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(MapVariantsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.MapVariantsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.MapVariants(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	MultipleOneofsToolOpenAI := EdgeCaseService_MultipleOneofsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		MultipleOneofsToolOpenAI = runtime.AddExtraPropertiesToTool(MultipleOneofsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(MultipleOneofsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.MultipleOneofsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.MultipleOneofs(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	NumericValidationToolOpenAI := EdgeCaseService_NumericValidationToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		NumericValidationToolOpenAI = runtime.AddExtraPropertiesToTool(NumericValidationToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(NumericValidationToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.NumericValidationRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.NumericValidation(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	RepeatedMessagesToolOpenAI := EdgeCaseService_RepeatedMessagesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		RepeatedMessagesToolOpenAI = runtime.AddExtraPropertiesToTool(RepeatedMessagesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(RepeatedMessagesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.RepeatedMessagesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.RepeatedMessages(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+}
+
+// ForwardToConnectEdgeCaseServiceClientWithProvider registers a connectrpc client, to forward MCP calls to it using the specified LLM provider.
+func ForwardToConnectEdgeCaseServiceClientWithProvider(s *mcpserver.MCPServer, client ConnectEdgeCaseServiceClient, provider runtime.LLMProvider, opts ...runtime.Option) {
+	switch provider {
+	case runtime.LLMProviderOpenAI:
+		ForwardToConnectEdgeCaseServiceClientOpenAI(s, client, opts...)
+	case runtime.LLMProviderStandard:
+		fallthrough
+	default:
+		ForwardToConnectEdgeCaseServiceClient(s, client, opts...)
+	}
+}
+
 // ForwardToEdgeCaseServiceClient registers a gRPC client, to forward MCP calls to it.
 func ForwardToEdgeCaseServiceClient(s *mcpserver.MCPServer, client EdgeCaseServiceClient, opts ...runtime.Option) {
 	config := runtime.NewConfig()
@@ -1202,4 +1502,304 @@ func ForwardToEdgeCaseServiceClient(s *mcpserver.MCPServer, client EdgeCaseServi
 		}
 		return mcp.NewToolResultText(string(marshaled)), nil
 	})
+}
+
+// ForwardToEdgeCaseServiceClientOpenAI registers a gRPC client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardToEdgeCaseServiceClientOpenAI(s *mcpserver.MCPServer, client EdgeCaseServiceClient, opts ...runtime.Option) {
+	config := runtime.NewConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
+	AllScalarTypesToolOpenAI := EdgeCaseService_AllScalarTypesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		AllScalarTypesToolOpenAI = runtime.AddExtraPropertiesToTool(AllScalarTypesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(AllScalarTypesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.AllScalarTypesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.AllScalarTypes(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	DeepNestingToolOpenAI := EdgeCaseService_DeepNestingToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		DeepNestingToolOpenAI = runtime.AddExtraPropertiesToTool(DeepNestingToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(DeepNestingToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.DeepNestingRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.DeepNesting(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	EnumFieldsToolOpenAI := EdgeCaseService_EnumFieldsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		EnumFieldsToolOpenAI = runtime.AddExtraPropertiesToTool(EnumFieldsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(EnumFieldsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.EnumFieldsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.EnumFields(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	MapVariantsToolOpenAI := EdgeCaseService_MapVariantsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		MapVariantsToolOpenAI = runtime.AddExtraPropertiesToTool(MapVariantsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(MapVariantsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.MapVariantsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.MapVariants(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	MultipleOneofsToolOpenAI := EdgeCaseService_MultipleOneofsToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		MultipleOneofsToolOpenAI = runtime.AddExtraPropertiesToTool(MultipleOneofsToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(MultipleOneofsToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.MultipleOneofsRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.MultipleOneofs(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	NumericValidationToolOpenAI := EdgeCaseService_NumericValidationToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		NumericValidationToolOpenAI = runtime.AddExtraPropertiesToTool(NumericValidationToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(NumericValidationToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.NumericValidationRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.NumericValidation(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	RepeatedMessagesToolOpenAI := EdgeCaseService_RepeatedMessagesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		RepeatedMessagesToolOpenAI = runtime.AddExtraPropertiesToTool(RepeatedMessagesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(RepeatedMessagesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.RepeatedMessagesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.RepeatedMessages(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+}
+
+// ForwardToEdgeCaseServiceClientWithProvider registers a gRPC client, to forward MCP calls to it using the specified LLM provider.
+func ForwardToEdgeCaseServiceClientWithProvider(s *mcpserver.MCPServer, client EdgeCaseServiceClient, provider runtime.LLMProvider, opts ...runtime.Option) {
+	switch provider {
+	case runtime.LLMProviderOpenAI:
+		ForwardToEdgeCaseServiceClientOpenAI(s, client, opts...)
+	case runtime.LLMProviderStandard:
+		fallthrough
+	default:
+		ForwardToEdgeCaseServiceClient(s, client, opts...)
+	}
 }

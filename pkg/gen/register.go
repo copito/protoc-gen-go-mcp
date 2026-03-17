@@ -22,6 +22,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	mcpserver "github.com/mark3labs/mcp-go/server"
 	"github.com/redpanda-data/protoc-gen-go-mcp/pkg/runtime"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -160,4 +161,21 @@ func RegisterService(s *mcpserver.MCPServer, sd protoreflect.ServiceDescriptor, 
 			return mcp.NewToolResultText(string(marshaled)), nil
 		})
 	}
+}
+
+// RegisterServiceClient dynamically registers all unary RPCs from a protobuf
+// service descriptor as MCP tools, forwarding calls to a gRPC client.
+//
+// This allows leveraging gRPC interceptors by providing a grpc.ClientConnInterface
+// that has interceptors configured.
+func RegisterServiceClient(s *mcpserver.MCPServer, sd protoreflect.ServiceDescriptor, cc grpc.ClientConnInterface, opts RegisterServiceOptions) {
+	handler := func(ctx context.Context, method protoreflect.MethodDescriptor, req proto.Message) (proto.Message, error) {
+		resp := opts.NewMessage(method.Output())
+		err := cc.Invoke(ctx, "/"+string(sd.FullName())+"/"+string(method.Name()), req, resp)
+		if err != nil {
+			return nil, err
+		}
+		return resp, nil
+	}
+	RegisterService(s, sd, handler, opts)
 }

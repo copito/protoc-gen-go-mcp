@@ -561,6 +561,186 @@ func ForwardToConnectTestServiceClient(s *mcpserver.MCPServer, client ConnectTes
 	})
 }
 
+// ForwardToConnectTestServiceClientOpenAI registers a connectrpc client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardToConnectTestServiceClientOpenAI(s *mcpserver.MCPServer, client ConnectTestServiceClient, opts ...runtime.Option) {
+	config := runtime.NewConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
+	CreateItemToolOpenAI := TestService_CreateItemToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		CreateItemToolOpenAI = runtime.AddExtraPropertiesToTool(CreateItemToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(CreateItemToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.CreateItemRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.CreateItem(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	GetItemToolOpenAI := TestService_GetItemToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		GetItemToolOpenAI = runtime.AddExtraPropertiesToTool(GetItemToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(GetItemToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.GetItemRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.GetItem(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	ProcessWellKnownTypesToolOpenAI := TestService_ProcessWellKnownTypesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		ProcessWellKnownTypesToolOpenAI = runtime.AddExtraPropertiesToTool(ProcessWellKnownTypesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(ProcessWellKnownTypesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.ProcessWellKnownTypesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.ProcessWellKnownTypes(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	TestValidationToolOpenAI := TestService_TestValidationToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		TestValidationToolOpenAI = runtime.AddExtraPropertiesToTool(TestValidationToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(TestValidationToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.TestValidationRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.TestValidation(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+}
+
+// ForwardToConnectTestServiceClientWithProvider registers a connectrpc client, to forward MCP calls to it using the specified LLM provider.
+func ForwardToConnectTestServiceClientWithProvider(s *mcpserver.MCPServer, client ConnectTestServiceClient, provider runtime.LLMProvider, opts ...runtime.Option) {
+	switch provider {
+	case runtime.LLMProviderOpenAI:
+		ForwardToConnectTestServiceClientOpenAI(s, client, opts...)
+	case runtime.LLMProviderStandard:
+		fallthrough
+	default:
+		ForwardToConnectTestServiceClient(s, client, opts...)
+	}
+}
+
 // ForwardToTestServiceClient registers a gRPC client, to forward MCP calls to it.
 func ForwardToTestServiceClient(s *mcpserver.MCPServer, client TestServiceClient, opts ...runtime.Option) {
 	config := runtime.NewConfig()
@@ -719,4 +899,184 @@ func ForwardToTestServiceClient(s *mcpserver.MCPServer, client TestServiceClient
 		}
 		return mcp.NewToolResultText(string(marshaled)), nil
 	})
+}
+
+// ForwardToTestServiceClientOpenAI registers a gRPC client, to forward MCP calls to it using OpenAI-compatible schemas.
+func ForwardToTestServiceClientOpenAI(s *mcpserver.MCPServer, client TestServiceClient, opts ...runtime.Option) {
+	config := runtime.NewConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
+	CreateItemToolOpenAI := TestService_CreateItemToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		CreateItemToolOpenAI = runtime.AddExtraPropertiesToTool(CreateItemToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(CreateItemToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.CreateItemRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.CreateItem(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	GetItemToolOpenAI := TestService_GetItemToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		GetItemToolOpenAI = runtime.AddExtraPropertiesToTool(GetItemToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(GetItemToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.GetItemRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.GetItem(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	ProcessWellKnownTypesToolOpenAI := TestService_ProcessWellKnownTypesToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		ProcessWellKnownTypesToolOpenAI = runtime.AddExtraPropertiesToTool(ProcessWellKnownTypesToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(ProcessWellKnownTypesToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.ProcessWellKnownTypesRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.ProcessWellKnownTypes(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+	TestValidationToolOpenAI := TestService_TestValidationToolOpenAI
+	// Add extra properties to schema if configured
+	if len(config.ExtraProperties) > 0 {
+		TestValidationToolOpenAI = runtime.AddExtraPropertiesToTool(TestValidationToolOpenAI, config.ExtraProperties)
+	}
+
+	s.AddTool(TestValidationToolOpenAI, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		var req testdata.TestValidationRequest
+
+		message := request.GetArguments()
+
+		// Extract extra properties if configured
+		for _, prop := range config.ExtraProperties {
+			if propVal, ok := message[prop.Name]; ok {
+				ctx = context.WithValue(ctx, prop.ContextKey, propVal)
+			}
+		}
+
+		runtime.FixOpenAI(req.ProtoReflect().Descriptor(), message)
+
+		marshaled, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(marshaled, &req); err != nil {
+			return nil, err
+		}
+
+		resp, err := client.TestValidation(ctx, &req)
+		if err != nil {
+			return runtime.HandleError(err)
+		}
+
+		marshaled, err = (protojson.MarshalOptions{UseProtoNames: true, EmitDefaultValues: true}).Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.NewToolResultText(string(marshaled)), nil
+	})
+}
+
+// ForwardToTestServiceClientWithProvider registers a gRPC client, to forward MCP calls to it using the specified LLM provider.
+func ForwardToTestServiceClientWithProvider(s *mcpserver.MCPServer, client TestServiceClient, provider runtime.LLMProvider, opts ...runtime.Option) {
+	switch provider {
+	case runtime.LLMProviderOpenAI:
+		ForwardToTestServiceClientOpenAI(s, client, opts...)
+	case runtime.LLMProviderStandard:
+		fallthrough
+	default:
+		ForwardToTestServiceClient(s, client, opts...)
+	}
 }
