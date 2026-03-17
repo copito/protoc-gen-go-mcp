@@ -27,6 +27,11 @@ func main() {
 		"mcp",
 		"Generate files into a sub-package of the package containing the base .pb.go files using the given suffix. An empty suffix denotes to generate into the same package as the base pb.go files.",
 	)
+	includePaths := flagSet.String(
+		"include_paths",
+		"",
+		"Comma-separated list of paths to include for generation. If empty, all files are included. Use this to filter files in monorepos.",
+	)
 
 	protogen.Options{
 		ParamFunc: flagSet.Set,
@@ -35,7 +40,7 @@ func main() {
 			if !f.Generate {
 				continue
 			}
-			generator.NewFileGenerator(f, gen).Generate(*packageSuffix)
+			generator.NewFileGenerator(f, gen).Generate(*packageSuffix, *includePaths)
 		}
 		return nil
 	})

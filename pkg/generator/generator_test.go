@@ -20,6 +20,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	testdata "github.com/redpanda-data/protoc-gen-go-mcp/pkg/testdata/gen/go/testdata"
+	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -266,3 +267,42 @@ func TestSchemaMarshaling(t *testing.T) {
 	err = json.Unmarshal(marshaled, &unmarshaled)
 	g.Expect(err).ToNot(HaveOccurred())
 }
+
+func TestPathFiltering(t *testing.T) {
+	g := NewWithT(t)
+
+	// Mock file with path
+	file := &protogen.File{
+		Desc:     mockFileDescriptor{path: "idl/proto/quality/v1/service.proto"},
+		Services: []*protogen.Service{{}}, // Need at least one service
+	}
+	plugin := &protogen.Plugin{}
+	fg := NewFileGenerator(file, plugin)
+
+	// Case 1: No filter, should generate
+	g.Expect(fg.shouldGenerate("")).To(BeTrue())
+
+	// Case 2: Matching filter, should generate
+	g.Expect(fg.shouldGenerate("idl/proto/quality")).To(BeTrue())
+
+	// Case 3: Multiple filters, one matching
+	g.Expect(fg.shouldGenerate("idl/proto/alert, idl/proto/quality")).To(BeTrue())
+
+	// Case 4: Non-matching filter
+	g.Expect(fg.shouldGenerate("idl/proto/alert")).To(BeFalse())
+
+	// Case 5: No services, should not generate even if path matches
+	fileNoServices := &protogen.File{
+		Desc:     mockFileDescriptor{path: "idl/proto/quality/v1/service.proto"},
+		Services: []*protogen.Service{},
+	}
+	fgNoServices := NewFileGenerator(fileNoServices, plugin)
+	g.Expect(fgNoServices.shouldGenerate("idl/proto/quality")).To(BeFalse())
+}
+
+type mockFileDescriptor struct {
+	protoreflect.FileDescriptor
+	path string
+}
+
+func (m mockFileDescriptor) Path() string { return m.path }

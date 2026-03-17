@@ -23,16 +23,36 @@ It generates `*.pb.mcp.go` files for each protobuf service, enabling you to dele
 ### Generate code
 
 Add entry to your `buf.gen.yaml`:
-```
-...
+```yaml
+version: v2
 plugins:
-  - local:
-      - go
-      - run
-      - github.com/redpanda-data/protoc-gen-go-mcp/cmd/protoc-gen-go-mcp@latest
+  - local: ["go", "run", "github.com/redpanda-data/protoc-gen-go-mcp/cmd/protoc-gen-go-mcp@latest"]
     out: ./gen/go
     opt: paths=source_relative
 ```
+
+If you are using remote plugins for other languages or standard Go types, you can still run `protoc-gen-go-mcp` locally:
+
+```yaml
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: ./gen/go
+    opt: paths=source_relative
+  - local: ["go", "run", "github.com/redpanda-data/protoc-gen-go-mcp/cmd/protoc-gen-go-mcp@latest"]
+    out: ./gen/go
+    opt: paths=source_relative
+```
+
+### Options
+
+- `package_suffix`: (default: `mcp`) Suffix for the generated package.
+- `include_paths`: Comma-separated list of path prefixes to include for generation. Useful in monorepos to only generate MCP handlers for specific sub-directories.
+  ```yaml
+  opt:
+    - paths=source_relative
+    - include_paths=idl/proto/quality,idl/proto/alert
+  ```
 
 You need to generate the standard `*.pb.go` files as well. `protoc-gen-go-mcp` by defaults uses a separate subfolder `{$servicename}mcp`, and imports the `*pb.go` files - similar to connectrpc-go.
 
@@ -113,6 +133,21 @@ testdatamcp.ForwardToConnectTestServiceClient(mcpServer, myConnectClient)
 ```
 
 This directly connects the MCP handler to the connectrpc client, requiring zero boilerplate.
+
+### Leveraging gRPC Interceptors
+
+To ensure that MCP calls pass through your existing gRPC interceptors (for logging, auth, etc.), you should forward calls to a gRPC client rather than registering a handler directly to your implementation.
+
+```go
+// 1. Set up your gRPC client with interceptors
+conn, _ := grpc.Dial(addr, grpc.WithUnaryInterceptor(myInterceptor))
+client := testdata.NewTestServiceClient(conn)
+
+// 2. Forward MCP calls to the client
+testdatamcp.ForwardToTestServiceClient(mcpServer, client)
+```
+
+This way, every MCP tool call will trigger a gRPC request through the client, which in turn invokes all configured interceptors before reaching your server.
 
 ### Extra properties
 
